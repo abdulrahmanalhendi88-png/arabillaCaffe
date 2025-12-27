@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Arabella Café</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+  <div class="stage">
+    <main class="app-shell landing">
+      <section class="landing-content">
+        <!-- بدّلها بشعارك (PNG شفاف) -->
+        <img class="brand-mark" src="{% static 'img/alogo-white.png' %}" alt="Arabella Café">
+
+        <!-- <h1>أرابيلا كافيه</h1>
+        <p class="subtitle">
+          اطلب بسرعة من <span>منيو</span> اليوم<br/>
+          واستمتع بتجربة سهلة ولذيذة
+        </p> -->
+
+        <a class="btn btn-accent cta" href="{% url 'home' %}">إبدأ الآن</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

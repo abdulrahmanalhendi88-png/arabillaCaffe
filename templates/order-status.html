@@ -1,0 +1,129 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>تتبع الطلب - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+  <div class="stage">
+    <main class="app-shell">
+
+      <header class="app-topbar">
+        <!-- رجوع لصفحة نجاح الطلب -->
+        <a class="icon-btn" href="{% url 'order_success' order.id %}" aria-label="رجوع">‹</a>
+
+        <div class="top-title">تتبع الطلب</div>
+
+        <a class="icon-btn" href="{% url 'cart' %}" aria-label="السلة">🧺</a>
+      </header>
+
+      <section class="container">
+        <div class="track-head">
+          <div class="track-card">
+            <div class="track-row">
+              <div>
+                <div class="small text-muted">رقم الطلب</div>
+                <div class="track-strong">AR-{{ order.id }}</div>
+              </div>
+
+              <!-- شارة الحالة -->
+              <div class="track-pill" id="statusPill">
+                {% if order.status == 'new' %}NEW
+                {% elif order.status == 'preparing' %}قيد التحضير
+                {% elif order.status == 'ready' %}جاهز
+                {% elif order.status == 'delivered' %}تم التسليم
+                {% elif order.status == 'canceled' %}ملغي
+                {% else %}{{ order.status|upper }}
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="track-row mt-12">
+              <div>
+                <div class="small text-muted">الطاولة</div>
+                <div class="track-strong">#{{ order.table_no }}</div>
+              </div>
+
+              <div class="small text-muted">
+                آخر تحديث:
+                {% if order.updated_at %}
+                  {{ order.updated_at }}
+                {% else %}
+                  {{ order.created_at }}
+                {% endif %}
+              </div>
+            </div>
+
+            {% if order.note %}
+              <div class="mt-12 small text-muted">
+                <strong>ملاحظات:</strong> {{ order.note }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline mt-16">
+
+          <!-- تم الاستلام: دائماً Done -->
+          <div class="t-step is-done">
+            <div class="t-dot"></div>
+            <div class="t-body">
+              <div class="t-title">تم استلام الطلب</div>
+              <div class="t-sub text-muted">وصلنا طلبك وتم تسجيله</div>
+            </div>
+          </div>
+
+          <!-- قيد التحضير -->
+          <div class="t-step
+            {% if order.status == 'preparing' %}is-current
+            {% elif order.status == 'ready' or order.status == 'delivered' %}is-done
+            {% endif %}">
+            <div class="t-dot"></div>
+            <div class="t-body">
+              <div class="t-title">قيد التحضير</div>
+              <div class="t-sub text-muted">البار/المطبخ عم يجهّز الطلب</div>
+            </div>
+          </div>
+
+          <!-- جاهز -->
+          <div class="t-step
+            {% if order.status == 'ready' %}is-current
+            {% elif order.status == 'delivered' %}is-done
+            {% endif %}">
+            <div class="t-dot"></div>
+            <div class="t-body">
+              <div class="t-title">جاهز</div>
+              <div class="t-sub text-muted">طلبك صار جاهز للتقديم</div>
+            </div>
+          </div>
+
+          <!-- تم التسليم -->
+          <div class="t-step {% if order.status == 'delivered' %}is-current is-done{% endif %}">
+            <div class="t-dot"></div>
+            <div class="t-body">
+              <div class="t-title">تم التسليم</div>
+              <div class="t-sub text-muted">بالهناء والشفاء</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="row mt-16">
+          <a class="btn btn-accent-outline" href="{% url 'home' %}" style="flex:1">رجوع للمنيو</a>
+          <button class="btn btn-accent" type="button" style="flex:1" onclick="location.reload()">تحديث</button>
+        </div>
+
+        <div class="state-hint mt-12 small text-muted">
+          * الحالة تُحدّث من لوحة الإدارة (/panel/).
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

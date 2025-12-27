@@ -1,0 +1,90 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الأصناف - Admin</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+
+</head>
+<body>
+  <div class="admin">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="b1">Arabella</div>
+          <div class="b2">Admin Panel</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item" href="{% url 'admin' %}">الطلبات الحالية</a>
+        <a class="nav-item" href="{% url 'admin-history' %}">سجل الطلبات</a>
+        <a class="nav-item is-active" href="{% url 'admin-items' %}">الأصناف</a>
+        <a class="nav-item" href="#">الإعدادات</a>
+      </nav>
+
+      <div class="side-footer">
+        <div class="small text-muted">الحالة: Online</div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div class="top-left">
+          <h1>إدارة الأصناف</h1>
+          <div class="hint">إضافة/تعديل/إخفاء منتجات وعروض (واجهة مبدئية)</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn btn-accent btn-sm" type="button">+ إضافة منتج</button>
+          <button class="btn btn-accent-outline btn-sm" type="button">+ إضافة عرض</button>
+        </div>
+      </header>
+
+      <section class="items-tabs">
+        <button class="tab is-active" type="button">المنتجات</button>
+        <button class="tab" type="button">العروض</button>
+        <button class="tab" type="button">التصنيفات</button>
+      </section>
+
+      <section class="items-table mt-16">
+        <div class="items-head">
+          <div>الاسم</div>
+          <div>السعر</div>
+          <div>الحالة</div>
+          <div>إجراءات</div>
+        </div>
+
+        <div class="items-row">
+          <div class="it-name">
+            نسكافيه 3/1
+            <div class="small text-muted">مشاريب ساخنة</div>
+          </div>
+          <div class="it-price">25 ألف</div>
+          <div><span class="badge">مفعّل</span></div>
+          <div class="it-actions">
+            <button class="btn btn-accent-outline btn-sm" type="button">تعديل</button>
+            <button class="btn btn-accent-outline btn-sm" type="button">إخفاء</button>
+          </div>
+        </div>
+
+        <div class="items-row">
+          <div class="it-name">
+            آيس لاتيه
+            <div class="small text-muted">مشاريب باردة</div>
+          </div>
+          <div class="it-price">30 ألف</div>
+          <div><span class="badge new">مميز</span></div>
+          <div class="it-actions">
+            <button class="btn btn-accent-outline btn-sm" type="button">تعديل</button>
+            <button class="btn btn-accent-outline btn-sm" type="button">إخفاء</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

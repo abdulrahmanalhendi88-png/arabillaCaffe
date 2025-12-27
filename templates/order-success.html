@@ -1,0 +1,79 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>تم إرسال الطلب - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+  <div class="stage">
+    <main class="app-shell">
+
+      <header class="app-topbar">
+        <a class="icon-btn" href="{% url 'home' %}" aria-label="رجوع للرئيسية">🏠</a>
+        <div class="top-title">تم إرسال الطلب</div>
+        <a class="btn btn-accent" href="{% url 'order-status' order.id %}" style="width:100%">تتبّع الطلب</a>
+
+
+
+      </header>
+
+      <section class="container">
+        <div class="success-wrap">
+          <div class="success-icon" aria-hidden="true">✓</div>
+
+          <h1 class="success-title">طلبك انرسل بنجاح</h1>
+          <p class="success-sub text-muted">
+            رح يبلّش التحضير فوراً. فيك تتابع الحالة من زر “تتبّع الطلب”.
+          </p>
+
+          <div class="success-meta">
+            <div class="meta-row">
+              <span class="meta-k">رقم الطاولة</span>
+              <strong class="meta-v" id="tableNo">—</strong>
+            </div>
+            <div class="meta-row">
+              <span class="meta-k">رقم الطلب</span>
+              <strong class="meta-v" id="orderId">AR-0001</strong>
+            </div>
+            <div class="meta-row">
+              <span class="meta-k">وقت الإرسال</span>
+              <strong class="meta-v" id="sentAt">الآن</strong>
+            </div>
+          </div>
+
+          <div class="col-actions mt-16">
+            <a class="btn btn-accent" href="{% url 'order-status' order.id %}" style="width:100%">تتبّع الطلب</a>
+
+
+            
+            <a class="btn btn-accent-outline" href="{% url 'home' %}"  style="width:100%">رجوع للمنيو</a>
+          </div>
+
+          <div class="small text-muted mt-12">
+            ملاحظة: إذا بدك تعدّل الطلب، بلغ الكاشير أو انتظر الطلب القادم.
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // واجهة فقط: لاحقاً رح يجي orderId من السيرفر
+    const table = localStorage.getItem('ar_table') || new URLSearchParams(location.search).get('table') || '—';
+    document.getElementById('tableNo').textContent = table;
+
+    // توليد رقم طلب وهمي للعرض إن لم يوجد
+    const existingOrder = localStorage.getItem('ar_last_order_id');
+    const orderId = existingOrder || ('AR-' + String(Math.floor(1000 + Math.random()*9000)));
+    localStorage.setItem('ar_last_order_id', orderId);
+    document.getElementById('orderId').textContent = orderId;
+
+    const now = new Date();
+    document.getElementById('sentAt').textContent = now.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
+  </script>
+</body>
+</html>

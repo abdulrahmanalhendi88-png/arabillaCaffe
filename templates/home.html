@@ -1,0 +1,186 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>الرئيسية - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+
+<body>
+  <div class="stage">
+    <main class="app-shell">
+
+      <!-- صورة أعلى + لوجو -->
+      <header class="hero-top">
+        <img src="{% static 'img/hero-top.jpg' %}" alt="header">
+        <div class="hero-logo">
+          <img src="{% static 'img/logo-mark.png' %}" alt="logo">
+        </div>
+      </header>
+
+<div class="container row space-between mt-12">
+  <a class="btn btn-accent-outline btn-sm" href="{% url 'cart' %}">
+    🧺 السلة
+    {% if cart_count and cart_count > 0 %}
+      ({{ cart_count }})
+    {% endif %}
+  </a>
+
+  {% if cart_total and cart_total > 0 %}
+    <div class="small text-muted">الإجمالي: <strong>{{ cart_total }}</strong> ل.س</div>
+  {% endif %}
+</div>
+
+
+      <!-- البحث -->
+  <section class="search-wrap">
+    <form class="searchbar" method="get" action="{% url 'home' %}">
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none">
+          <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+
+        <input
+          name="q"
+          type="text"
+          placeholder="Search coffee"
+          value="{{ q|default:'' }}"
+        />
+      </div>
+
+      <button class="square-action" type="submit" title="بحث">
+        🔎
+      </button>
+    </form>
+  </section>
+
+
+      <!-- Categories (Horizontal Scroll) -->
+<section class="categories">
+  <div class="cat-scroll" id="catScroll">
+
+    <!-- زر الكل -->
+<a class="btn btn-pill {% if selected_cat == 'all' %}is-active{% endif %}"
+   href="{% url 'home' %}{% if q %}?q={{ q|urlencode }}{% endif %}">
+  الكل
+</a>
+
+{% for c in categories %}
+  <a class="btn btn-pill {% if selected_cat == c.slug %}is-active{% endif %}"
+     href="{% url 'home' %}?cat={{ c.slug }}{% if q %}&q={{ q|urlencode }}{% endif %}">
+    {{ c.name }}
+  </a>
+{% endfor %}
+  </div>
+</section>
+
+      <!-- عروض اليوم -->
+      <section class="section-bar">
+        <div class="title2">عروض اليوم</div>
+        <a class="more" href="{% url 'offers' %}">... المزيد</a>
+      </section>
+
+      <section class="offer-strip">
+        {% for o in offers %}
+          <article class="offer-card">
+            <img
+              src="{% if o.image %}{{ o.image.url }}{% else %}{% static 'img/product-2.jpg' %}{% endif %}"
+              alt="offer"
+            />
+            <div class="offer-meta">
+              <div class="name">
+                {{ o.title }}
+                {% if o.subtitle %}
+                  <div class="small" style="opacity:.85; margin-top:4px;">{{ o.subtitle }}</div>
+                {% endif %}
+              </div>
+              <div class="price">{{ o.price_syp }} ليرة</div>
+              <a class="btn btn-accent btn-sm" href="{% url 'offer_customize' o.slug %}
+">اطلب الآن</a>
+
+
+
+            </div>
+          </article>
+        {% empty %}
+          <!-- fallback ثابت إذا ما في عروض -->
+          <article class="offer-card">
+            <img src="{% static 'img/product-1.jpg' %}" alt="offer">
+            <div class="offer-meta">
+              <div class="name">لا يوجد عروض حالياً</div>
+              <div class="price">—</div>
+              <a class="btn btn-accent btn-sm" href="{% url 'offers' %}">عرض الكل</a>
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+
+      <!-- منتجات حسب الكاتيجوري المختار -->
+      <section class="products">
+        <div class="title mb-8">المنتجات</div>
+
+        <div class="grid" id="productGrid">
+          {% for p in products %}
+            <article class="product-card" data-cat="{{ p.category.slug }}">
+              <img
+                src="{% if p.image %}{{ p.image.url }}{% else %}{% static 'img/product-3.jpg' %}{% endif %}"
+                alt="prod"
+              />
+              <div class="pbody">
+                <p class="pname">{{ p.name }}</p>
+                <p class="pdesc">
+                  {% if p.description %}
+                    {{ p.description }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </p>
+                <div class="prow">
+                  <span class="pprice">{{ p.price_syp }} ليرة</span>
+                  <!-- حالياً بنروح لصفحة product العامة.
+                       بالخطوة الجاية رح نخليها product/<slug>/ -->
+                  <a class="btn btn-accent btn-sm" href="{% url 'product_details' p.slug %}">تفاصيل</a>
+
+
+
+                </div>
+              </div>
+            </article>
+          {% empty %}
+            <!-- fallback إذا ما في منتجات 
+            <article class="product-card" data-cat="all">
+              <img src="{% static 'img/product-6.jpg' %}" alt="prod">
+              <div class="pbody">
+                <p class="pname">لا يوجد منتجات حالياً</p>
+                <p class="pdesc">أضف منتجات من لوحة الإدارة</p>
+                <div class="prow">
+                  <span class="pprice">—</span>
+                  <a class="btn btn-accent btn-sm" href="/admin/">Admin</a>
+                </div>
+              </div>
+            </article>-->
+
+            <!-- fallback إذا ما في منتجات -->
+            <article class="product-card" data-cat="all">
+              <img src="{% static 'img/Empty.jpg' %}" alt="prod">
+              <div class="pbody">
+                <p class="pname">لا يوجد منتجات حالياً</p>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- فوتر صورة فقط -->
+      <footer class="footer-photo">
+        <img src="{% static 'img/footer-coffee.jpg' %}" alt="footer">
+      </footer>
+
+    </main>
+  </div>
+
+</body>
+</html>

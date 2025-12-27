@@ -1,0 +1,73 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>تفاصيل المنتج - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+  <div class="stage">
+    <main class="app-shell">
+
+      <section class="product-details">
+        <img
+          src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'img/product-3.jpg' %}{% endif %}"
+          alt="product"
+        />
+
+        <div class="pd-top">
+          <div class="pd-name">{{ product.name }}</div>
+          <div class="pd-price">{{ product.price_syp }} ليرة</div>
+        </div>
+
+        <div class="pd-desc">
+          {% if product.description %}
+            {{ product.description }}
+          {% else %}
+            وصف غير متوفر
+          {% endif %}
+        </div>
+
+        <!-- كمية -->
+        <div class="stepper center" style="margin: 10px 0 14px;">
+          <button type="button" class="dec" onclick="decQty()">-</button>
+          <strong class="qty" id="qtyEl">1</strong>
+          <button type="button" class="inc" onclick="incQty()">+</button>
+        </div>
+
+        <div class="pd-actions">
+          <!-- Add to cart حقيقي (POST) -->
+          <form method="post" action="{% url 'cart_add' product.slug %}" style="width:100%;">
+            {% csrf_token %}
+            <input type="hidden" name="qty" id="qtyInput" value="1">
+            <button class="btn btn-accent" type="submit" style="width:100%;">أضف للسلة</button>
+          </form>
+
+          <a class="btn btn-accent-outline" href="{% url 'home' %}">رجوع للرئيسية</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    let qty = 1;
+    const qtyEl = document.getElementById('qtyEl');
+    const qtyInput = document.getElementById('qtyInput');
+
+    function incQty(){
+      qty++;
+      qtyEl.textContent = qty;
+      qtyInput.value = qty;
+    }
+
+    function decQty(){
+      qty = Math.max(1, qty - 1);
+      qtyEl.textContent = qty;
+      qtyInput.value = qty;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سجل الطلبات - Admin</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+</head>
+<body>
+  <div class="admin">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="b1">Arabella</div>
+          <div class="b2">Admin Panel</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item" href="% url 'admin' %">الطلبات الحالية</a>
+        <a class="nav-item is-active" href="% url 'admin-history' %">سجل الطلبات</a>
+        <a class="nav-item" href="{% url 'admin-items' %}">الأصناف</a>
+        <a class="nav-item" href="#">الإعدادات</a>
+      </nav>
+
+      <div class="side-footer">
+        <div class="small text-muted">الحالة: Online</div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div class="top-left">
+          <h1>سجل الطلبات</h1>
+          <div class="hint">فلترة حسب التاريخ/الحالة (واجهة مبدئية)</div>
+        </div>
+        <div class="top-actions">
+          <input class="search" type="text" placeholder="بحث برقم طلب أو طاولة..." />
+          <button class="btn btn-accent btn-sm" type="button">بحث</button>
+        </div>
+      </header>
+
+      <section class="history-filters">
+        <select class="admin-select">
+          <option>اليوم</option>
+          <option>أمس</option>
+          <option>آخر 7 أيام</option>
+          <option>شهر</option>
+        </select>
+
+        <select class="admin-select">
+          <option>كل الحالات</option>
+          <option>تم التسليم</option>
+          <option>جاهز</option>
+          <option>قيد التحضير</option>
+          <option>ملغي</option>
+        </select>
+
+        <button class="btn btn-accent-outline btn-sm" type="button">تطبيق</button>
+      </section>
+
+      <section class="history-list mt-16">
+        <article class="history-row">
+          <div class="h-left">
+            <div class="h-title">AR-3481 <span class="small text-muted">— طاولة #12</span></div>
+            <div class="small text-muted">نسكافيه x2 — عرض قهوة+أركيلة x1</div>
+          </div>
+          <div class="h-right">
+            <div class="badge">تم التسليم</div>
+            <div class="small text-muted">10:42</div>
+          </div>
+        </article>
+
+        <article class="history-row">
+          <div class="h-left">
+            <div class="h-title">AR-2190 <span class="small text-muted">— طاولة #3</span></div>
+            <div class="small text-muted">آيس لاتيه x1 — تشيز كيك x1</div>
+          </div>
+          <div class="h-right">
+            <div class="badge new">جاهز</div>
+            <div class="small text-muted">10:35</div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

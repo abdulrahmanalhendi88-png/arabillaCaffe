@@ -1,0 +1,124 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>السلة - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+  <div class="stage">
+    <main class="app-shell">
+
+      <div class="container row space-between mt-12">
+        <div class="title">السلة</div>
+        <!-- <a class="btn btn-accent-outline btn-sm" href="{% url 'home' %}">رجوع</a> -->
+      </div>
+
+      <section class="cart">
+
+        {% if error %}
+          <div class="container" style="color:#b00020; font-weight:900; padding-top:10px;">
+            {{ error }}
+          </div>
+        {% endif %}
+
+        {% if not lines %}
+          <div class="container text-muted" style="text-align:center; padding:24px;">
+            السلة فارغة حالياً
+          </div>
+        {% else %}
+
+          {% for it in lines %}
+            <article class="cart-card normal">
+              <div class="cart-left">
+                <img src="{% if it.image %}{{ it.image }}{% else %}{% static 'img/product-3.jpg' %}{% endif %}" alt="item">
+
+                <div>
+                  <div class="cart-title">
+                    {{ it.title }}
+                    {% if it.kind == 'offer' %}
+                      <span class="small" style="opacity:.75; font-weight:900;"> — عرض</span>
+                    {% else %}
+                      <span class="small" style="opacity:.75; font-weight:900;"> — منتج</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="small text-muted mt-8">
+                    سعر الوحدة: <strong>{{ it.unit_price }}</strong> ل.س
+                    — مجموع السطر: <strong>{{ it.line_total }}</strong> ل.س
+                  </div>
+
+                  {% if it.note %}
+                    <div class="small mt-8" style="opacity:.85;">
+                      <strong>تفاصيل:</strong> {{ it.note }}
+                    </div>
+                  {% endif %}
+
+<div class="stepper">
+  <!-- -1 -->
+  <form method="post" action="{% url 'cart_update_key' %}">
+    {% csrf_token %}
+    <input type="hidden" name="key" value="{{ it.key }}">
+    <input type="hidden" name="delta" value="-1">
+    <button type="submit" class="dec">-</button>
+  </form>
+
+  <strong class="qty">{{ it.qty }}</strong>
+
+  <!-- +1 -->
+  <form method="post" action="{% url 'cart_update_key' %}">
+    {% csrf_token %}
+    <input type="hidden" name="key" value="{{ it.key }}">
+    <input type="hidden" name="delta" value="1">
+    <button type="submit" class="inc">+</button>
+  </form>
+</div>
+                </div>
+              </div>
+
+<!-- حذف -->
+<form method="post" action="{% url 'cart_remove_key' %}">
+  {% csrf_token %}
+  <input type="hidden" name="key" value="{{ it.key }}">
+  <button class="delete-btn" type="submit">حذف</button>
+</form>
+            </article>
+          {% endfor %}
+
+          <div class="total-line">الإجمالي: {{ total }} ليرة سورية</div>
+
+          <!-- نموذج تأكيد الطلب -->
+          <form method="post" action="{% url 'checkout' %}" class="container mt-12">
+            {% csrf_token %}
+
+            <label class="form-label">رقم الطاولة</label>
+            <input
+              name="table_no"
+              value="{{ table_no }}"
+              placeholder="مثال: 12"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.15); outline:none;"
+            />
+
+            <div class="mt-12">
+              <label class="form-label">ملاحظات</label>
+              <textarea
+                name="note"
+                placeholder="مثلاً: سكر قليل..."
+                style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.15); outline:none; min-height:70px;"
+              ></textarea>
+            </div>
+
+            <div class="cart-confirm mt-12">
+              <button class="btn btn-accent" type="submit">تأكيد الطلب</button>
+            </div>
+          </form>
+
+        {% endif %}
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

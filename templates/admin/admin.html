@@ -1,0 +1,254 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+
+  <style>
+    /* Toast بسيط بدون ما نكسر ستايلك */
+    .toast{
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 9999;
+      background: rgba(17,17,20,.95);
+      color:#fff;
+      border: 1px solid rgba(183,122,85,.35);
+      padding: 12px 14px;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      display:none;
+      max-width: 360px;
+      font-weight: 800;
+    }
+
+    /* تحسين بسيط لسطر العناصر ليحمل 4 أعمدة بدون ما نخرب ستايلك */
+    .order-line{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .order-line:last-child{ border-bottom:0; }
+
+    .order-cols{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .col-name{ flex: 1; font-weight: 900; }
+    .col-price, .col-qty, .col-total{
+      white-space: nowrap;
+      font-weight: 900;
+      font-size: 12px;
+      opacity: .9;
+    }
+    .col-total{ color: var(--accent); font-size: 12px; }
+
+    .order-sum{
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255,255,255,.12);
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      font-weight: 1000;
+    }
+    .order-sum .sum-v{
+      color: var(--accent);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast">🚨 وصل طلب جديد</div>
+
+  <div class="admin">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="b1">Arabella</div>
+          <div class="b2">Admin Panel</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item is-active" href="{% url 'admin_dashboard' %}">الطلبات الحالية</a>
+        <a class="nav-item" href="/admin/">Django Admin</a>
+        <a class="nav-item" href="#" onclick="return false;">الأصناف</a>
+        <a class="nav-item" href="#" onclick="return false;">الإعدادات</a>
+      </nav>
+
+      <div class="side-footer">
+        <div class="small text-muted">الحالة: Online</div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div class="top-left">
+          <h1>الطلبات حسب الطاولات</h1>
+          <div class="hint">أي طلب جديد رح يظهر هون (بدون صور)</div>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn btn-accent btn-sm" type="button" onclick="location.reload()">تحديث</button>
+        </div>
+      </header>
+
+      <section class="stats">
+        <div class="stat">
+          <div class="k">طلبات مفتوحة</div>
+          <div class="v">{{ open_orders }}</div>
+        </div>
+        <div class="stat">
+          <div class="k">طاولات فعّالة</div>
+          <div class="v">{{ active_tables }}</div>
+        </div>
+        <div class="stat">
+          <div class="k">آخر تحديث</div>
+          <div class="v">الآن</div>
+        </div>
+      </section>
+
+      <section class="tables">
+        {% for o in orders %}
+          <article class="table-card">
+            <div class="table-head">
+              <div class="tno">طاولة #{{ o.table_no }}</div>
+
+              {% if o.status == 'new' %}
+                <div class="badge new">NEW</div>
+              {% elif o.status == 'preparing' %}
+                <div class="badge">قيد التحضير</div>
+              {% elif o.status == 'ready' %}
+                <div class="badge">جاهز</div>
+              {% elif o.status == 'delivered' %}
+                <div class="badge">تم التسليم</div>
+              {% else %}
+                <div class="badge">{{ o.status|upper }}</div>
+              {% endif %}
+            </div>
+
+            <div class="orders">
+              <!-- Header سطر للعناوين -->
+              <div class="order-line" style="opacity:.75;">
+                <div class="order-cols">
+                  <span class="col-type">نوع</span>
+<span class="col-name">
+  {{ it.name_snapshot }}
+  {% if it.item_type == 'offer' %}
+    <span class="badge" style="margin-inline-start:8px;">عرض</span>
+  {% else %}
+    <span class="badge" style="margin-inline-start:8px;">منتج</span>
+  {% endif %}
+
+  {% if it.note_snapshot %}
+    <div class="small" style="opacity:.75; margin-top:4px;">{{ it.note_snapshot }}</div>
+  {% endif %}
+</span>
+                  <span class="col-price">سعر</span>
+                  <span class="col-qty">كمية</span>
+                  <span class="col-total">مجموع</span>
+                </div>
+              </div>
+
+              {% for it in o.items.all %}
+                <div class="order-line">
+                  <div class="order-cols">
+                    <span class="col-type">{% if it.item_type == 'offer' %}عرض{% else %}منتج{% endif %}</span>
+
+                    <span class="col-name">
+                      {{ it.name_snapshot }}
+                      {% if it.note_snapshot %}
+                        <div class="small text-muted" style="margin-top:4px;">{{ it.note_snapshot }}</div>
+                      {% endif %}
+                    </span>
+
+                    <span class="col-price">{{ it.price_syp_snapshot }} ل.س</span>
+                    <span class="col-qty">x{{ it.qty }}</span>
+                    <span class="col-total">{{ it.line_total }} ل.س</span>
+                  </div>
+                </div>
+
+
+              {% empty %}
+                <div class="hint">لا يوجد عناصر ضمن هذا الطلب</div>
+              {% endfor %}
+
+              <!-- إجمالي الطلب -->
+              <div class="order-sum">
+                <span>الإجمالي</span>
+                <span class="sum-v">
+                  {% if o.total_syp and o.total_syp > 0 %}
+                    {{ o.total_syp }} ل.س
+                  {% else %}
+                    {# fallback بسيط: اطبع 0 إذا ما كان محسوب #}
+                    0 ل.س
+                  {% endif %}
+                </span>
+              </div>
+
+              {% if o.note %}
+                <div class="order-note">
+                  <strong>ملاحظات:</strong> {{ o.note }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="table-actions">
+              <form method="post" action="{% url 'admin_set_status' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="preparing">
+                <button class="btn btn-accent-outline btn-sm" type="submit">قيد التحضير</button>
+              </form>
+
+              <form method="post" action="{% url 'admin_set_status' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="ready">
+                <button class="btn btn-accent-outline btn-sm" type="submit">جاهز</button>
+              </form>
+
+              <form method="post" action="{% url 'admin_done' o.id %}">
+                {% csrf_token %}
+                <button class="btn btn-accent btn-sm" type="submit">تم التنفيذ / إفراغ</button>
+              </form>
+            </div>
+          </article>
+        {% empty %}
+          <div class="hint">لا يوجد طلبات حالياً</div>
+        {% endfor %}
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const serverMaxId = Number("{{ max_order_id|default:0 }}") || 0;
+    const key = "admin_last_seen_order_id";
+    const lastSeen = Number(localStorage.getItem(key) || "0");
+
+    if (lastSeen === 0 && serverMaxId > 0) {
+      localStorage.setItem(key, String(serverMaxId));
+    } else if (serverMaxId > lastSeen) {
+      localStorage.setItem(key, String(serverMaxId));
+      const toast = document.getElementById("toast");
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 2500);
+    }
+
+    setInterval(() => location.reload(), 5000);
+  </script>
+
+</body>
+</html>

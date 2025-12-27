@@ -1,0 +1,111 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تفاصيل الطلب - Admin</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+  <div class="admin">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="b1">Arabella</div>
+          <div class="b2">Admin Panel</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item" href="{% url 'admin' %}">الطلبات الحالية</a>
+        <a class="nav-item is-active" href="{% url 'admin-order-details' %}">تفاصيل الطلب</a>
+        <a class="nav-item" href="{% url 'admin-history' %}">سجل الطلبات</a>
+        <a class="nav-item" href="{% url 'admin-items' %}">الأصناف</a>
+        <a class="nav-item" href="#">الإعدادات</a>
+      </nav>
+
+      <div class="side-footer">
+        <div class="small text-muted">الحالة: Online</div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div class="top-left">
+          <h1>تفاصيل طاولة <span class="accent" id="tableNo">—</span></h1>
+          <div class="hint">راجع العناصر والملاحظات، ثم حدّث الحالة</div>
+        </div>
+        <div class="top-actions">
+          <a class="btn btn-accent-outline btn-sm" href="{% url 'admin' %}">رجوع</a>
+          <button class="btn btn-accent btn-sm" type="button" onclick="alert('تحديث تجريبي ✅')">تحديث</button>
+        </div>
+      </header>
+
+      <section class="detail-grid">
+        <article class="detail-card">
+          <div class="detail-head">
+            <div>
+              <div class="small text-muted">رقم الطلب</div>
+              <div class="detail-strong" id="orderId">AR-0001</div>
+            </div>
+            <div class="badge new" id="badge">NEW</div>
+          </div>
+
+          <div class="detail-list mt-12">
+            <div class="d-line">
+              <div class="d-name">نسكافيه 3/1</div>
+              <div class="d-qty">x2</div>
+            </div>
+            <div class="d-line">
+              <div class="d-name">عرض (قهوة + أركيلة)</div>
+              <div class="d-qty">x1</div>
+            </div>
+          </div>
+
+          <div class="detail-note mt-12">
+            <strong>ملاحظات:</strong>
+            <div class="small">سكر قليل — الأركيلة عنب ونعنع</div>
+          </div>
+        </article>
+
+        <article class="detail-card">
+          <div class="detail-head">
+            <div class="tno">تغيير الحالة</div>
+            <div class="badge" id="stateText">قيد التحضير</div>
+          </div>
+
+          <div class="status-actions mt-12">
+            <button class="btn btn-accent-outline btn-sm" type="button" onclick="setState('تم استلام الطلب')">استلام</button>
+            <button class="btn btn-accent btn-sm" type="button" onclick="setState('قيد التحضير')">قيد التحضير</button>
+            <button class="btn btn-accent-outline btn-sm" type="button" onclick="setState('جاهز')">جاهز</button>
+            <button class="btn btn-accent-outline btn-sm" type="button" onclick="setState('تم التسليم')">تم التسليم</button>
+          </div>
+
+          <div class="mt-16 small text-muted">
+            * لاحقاً رح تنربط الأزرار بــ API لتحديث الحالة على السيرفر.
+          </div>
+
+          <div class="table-actions mt-16">
+            <button class="btn btn-accent btn-sm" type="button" onclick="alert('تم إغلاق الطلب (تجريبي) ✅')">إغلاق الطلب</button>
+            <button class="btn btn-accent-outline btn-sm" type="button" onclick="alert('طباعة (تجريبي) 🧾')">طباعة</button>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const p = new URLSearchParams(location.search);
+    const t = p.get('table') || '—';
+    document.getElementById('tableNo').textContent = `#${t}`;
+
+    function setState(txt){
+      document.getElementById('stateText').textContent = txt;
+      document.getElementById('badge').textContent = txt === 'تم استلام الطلب' ? 'NEW' : txt;
+    }
+  </script>
+</body>
+</html>

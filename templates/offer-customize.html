@@ -1,0 +1,91 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>تخصيص العرض - Arabella</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+  <div class="stage">
+    <main class="app-shell">
+
+      <header class="app-topbar">
+        <a class="icon-btn" href="javascript:history.back()" aria-label="رجوع">‹</a>
+        <div class="top-title">تخصيص العرض</div>
+
+        <a class="icon-btn" href="{% url 'cart' %}" aria-label="السلة" style="position:relative;">
+          🧺
+          {% if cart_count and cart_count > 0 %}
+            <span style="
+              position:absolute; top:-6px; right:-6px;
+              min-width:18px; height:18px; padding:0 5px;
+              border-radius:999px;
+              background: var(--accent);
+              color:#fff; font-size:11px; font-weight:900;
+              display:flex; align-items:center; justify-content:center;
+              line-height:1;
+            ">{{ cart_count }}</span>
+          {% endif %}
+        </a>
+      </header>
+
+      <section class="product-details">
+        <img
+          src="{% if offer.image %}{{ offer.image.url }}{% else %}{% static 'img/product-1.jpg' %}{% endif %}"
+          alt="offer"
+        />
+
+        <div class="pd-top">
+          <div class="pd-name">{{ offer.title }}</div>
+          <div class="pd-price">{{ offer.price_syp }} ليرة</div>
+        </div>
+
+        {% if offer.subtitle %}
+          <div class="pd-desc">{{ offer.subtitle }}</div>
+        {% else %}
+          <div class="pd-desc">اختر تفضيلاتك للعرض ثم أضف للسلة.</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'cart_add_offer' offer.id %}">
+          {% csrf_token %}
+
+
+          <div class="form-block">
+            <label class="form-label">ملاحظات</label>
+            <textarea name="note" placeholder="اكتب ملاحظات الطلب..." style="width:100%; min-height: 90px;"></textarea>
+          </div>
+
+          <!-- كمية -->
+          <div class="stepper center" style="margin: 10px 0 14px;">
+            <button type="button" class="dec" onclick="decQty()">-</button>
+            <strong class="qty" id="qtyEl">1</strong>
+            <button type="button" class="inc" onclick="incQty()">+</button>
+          </div>
+          <input type="hidden" name="qty" id="qtyInput" value="1" />
+
+          <div class="pd-actions">
+            <button class="btn btn-accent" type="submit">أضف للسلة</button>
+            <a class="btn btn-accent-outline" href="{% url 'offers' %}">رجوع للعروض</a>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    let qty = 1;
+    const qtyEl = document.getElementById('qtyEl');
+    const qtyInput = document.getElementById('qtyInput');
+
+    function sync(){
+      qtyEl.textContent = qty;
+      qtyInput.value = qty;
+    }
+    function incQty(){ qty = Math.min(50, qty + 1); sync(); }
+    function decQty(){ qty = Math.max(1, qty - 1); sync(); }
+  </script>
+</body>
+</html>
