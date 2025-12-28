@@ -38,5 +38,8 @@ urlpatterns = [
     path("panel/order/<int:order_id>/done/", admin_views.done, name="admin_done"),
 
 
+    path("panel/item/<int:item_id>/inc/", admin_views.item_inc, name="admin_item_inc"),
+    path("panel/item/<int:item_id>/dec/", admin_views.item_dec, name="admin_item_dec"),
+    path("panel/item/<int:item_id>/remove/", admin_views.item_remove, name="admin_item_remove"),
 
 ]

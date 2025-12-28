@@ -13,7 +13,7 @@
 
       <div class="container row space-between mt-12">
         <div class="title">السلة</div>
-        <!-- <a class="btn btn-accent-outline btn-sm" href="{% url 'home' %}">رجوع</a> -->
+        <a class="btn btn-accent-outline btn-sm" href="{% url 'home' %}">رجوع</a>
       </div>
 
       <section class="cart">
@@ -37,7 +37,7 @@
 
                 <div>
                   <div class="cart-title">
-                    {{ it.title }}
+                    {{ it.name }}
                     {% if it.kind == 'offer' %}
                       <span class="small" style="opacity:.75; font-weight:900;"> — عرض</span>
                     {% else %}
@@ -56,34 +56,12 @@
                     </div>
                   {% endif %}
 
-<div class="stepper">
-  <!-- -1 -->
-  <form method="post" action="{% url 'cart_update_key' %}">
-    {% csrf_token %}
-    <input type="hidden" name="key" value="{{ it.key }}">
-    <input type="hidden" name="delta" value="-1">
-    <button type="submit" class="dec">-</button>
-  </form>
-
-  <strong class="qty">{{ it.qty }}</strong>
-
-  <!-- +1 -->
-  <form method="post" action="{% url 'cart_update_key' %}">
-    {% csrf_token %}
-    <input type="hidden" name="key" value="{{ it.key }}">
-    <input type="hidden" name="delta" value="1">
-    <button type="submit" class="inc">+</button>
-  </form>
-</div>
+                  <!-- عرض الكمية فقط (بدون تعديل من العميل) -->
+                  <div class="stepper">
+                    <strong class="qty">{{ it.qty }}</strong>
+                  </div>
                 </div>
               </div>
-
-<!-- حذف -->
-<form method="post" action="{% url 'cart_remove_key' %}">
-  {% csrf_token %}
-  <input type="hidden" name="key" value="{{ it.key }}">
-  <button class="delete-btn" type="submit">حذف</button>
-</form>
             </article>
           {% endfor %}
 

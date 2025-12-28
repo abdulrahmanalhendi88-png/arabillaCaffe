@@ -18,8 +18,10 @@ def capture_table_from_qr(request):
 
 def ensure_cart_not_cleared_if_open(request):
     """
-    ✅ إذا العميل سبق وبعت طلب (has_submitted_order=True)
-    وبعدين الأدمن سكّر الطلب → وقتها نمسح السلة تلقائياً عند أول زيارة.
+    ✅ إذا العميل كان عنده Order مفتوح وبعدين الأدمن سلّمه/فرّغه
+    عند أول زيارة لاحقًا:
+    - نمسح session cart
+    - ونشيل flags
     """
     if not request.session.get("has_submitted_order"):
         return
@@ -31,14 +33,22 @@ def ensure_cart_not_cleared_if_open(request):
     open_order_exists = Order.objects.filter(table_no=table_no).exclude(status__in=CLOSED_STATUSES).exists()
     if not open_order_exists:
         cart_srv.clear(request.session)
+        request.session["has_submitted_order"] = False
+        request.session.pop("order_id", None)
         request.session.modified = True
 
 
 
+
 def _cart_summary(session):
+    table_no = (session.get("table_no") or "").strip()
+    if session.get("has_submitted_order") and table_no:
+        return _db_cart_summary(table_no)
+
     lines, total = cart_srv.get_lines(session)
     count = sum(int(ln.qty) for ln in lines)
-    return count, int(total)
+    return int(count), int(total)
+
 
 
 def landing(request):
@@ -128,10 +138,51 @@ def cart_page(request):
     capture_table_from_qr(request)
     ensure_cart_not_cleared_if_open(request)
 
-    lines, total = cart_srv.get_lines(request.session)
-    table_no = request.session.get("table_no", "")
+    table_no = (request.session.get("table_no") or "").strip()
 
+    # ✅ إذا في Order مفتوح بعد checkout: اعرض من DB
+    if request.session.get("has_submitted_order") and table_no:
+        order = _get_open_order_for_table(table_no)
+        if order:
+            ui_lines = []
+            for it in order.items.all():
+                kind = "offer" if it.item_type == OrderItem.ItemType.OFFER else "product"
+
+                img = None
+                if it.item_type == OrderItem.ItemType.PRODUCT and it.product_id:
+                    if it.product and it.product.image:
+                        img = it.product.image.url
+                if it.item_type == OrderItem.ItemType.OFFER and it.offer_id:
+                    if it.offer and it.offer.image:
+                        img = it.offer.image.url
+
+                unit = int(it.price_syp_snapshot)
+                qty = int(it.qty)
+                ui_lines.append({
+                    "kind": kind,
+                    "name": it.name_snapshot,
+                    "image": img,
+                    "qty": qty,
+                    "unit_price": unit,
+                    "line_total": unit * qty,
+                    "note": it.note_snapshot,
+                })
+
+            total = sum(int(x["line_total"]) for x in ui_lines)
+            if int(order.total_syp) != int(total):
+                order.total_syp = int(total)
+                order.save()
+
+            return render(request, "cart.html", {
+                "lines": ui_lines,
+                "total": int(total),
+                "table_no": table_no,
+            })
+
+    # ✅ قبل checkout: اعرض من session cart
+    lines, total = cart_srv.get_lines(request.session)
     ui_lines = []
+
     for ln in lines:
         if ln.kind == "product":
             p: Product = ln.obj
@@ -139,7 +190,7 @@ def cart_page(request):
             ui_lines.append({
                 "key": ln.key,
                 "kind": "product",
-                "name": p.name,           # ✅ template عندك يستخدم it.name
+                "name": p.name,
                 "image": img,
                 "qty": int(ln.qty),
                 "unit_price": int(ln.unit_price),
@@ -152,7 +203,7 @@ def cart_page(request):
             ui_lines.append({
                 "key": ln.key,
                 "kind": "offer",
-                "name": o.title,          # ✅ template عندك يستخدم it.name
+                "name": o.title,
                 "image": img,
                 "qty": int(ln.qty),
                 "unit_price": int(ln.unit_price),
@@ -274,7 +325,6 @@ def set_table(request):
 
 @require_POST
 def checkout(request):
-    # ✅ ما في مسح للسلة بعد التأكيد
     lines, total = cart_srv.get_lines(request.session)
     if not lines:
         return redirect("cart")
@@ -293,14 +343,11 @@ def checkout(request):
     with transaction.atomic():
         order = _get_or_create_open_order(table_no)
 
-        # ✅ تحديث الملاحظة والإجمالي
         order.note = note
         order.total_syp = int(total)
-        if order.status in CLOSED_STATUSES:
-            order.status = Order.Status.NEW
         order.save()
 
-        # ✅ المهم: استبدال العناصر كلها بما هو موجود حالياً بالسلة
+        # استبدال العناصر بما في السلة الحالية
         order.items.all().delete()
 
         items = []
@@ -333,11 +380,34 @@ def checkout(request):
         OrderItem.objects.bulk_create(items)
 
     request.session["table_no"] = table_no
-    request.session["has_submitted_order"] = True  # ✅ صار في Order مربوط بالطاولة
+    request.session["has_submitted_order"] = True
+    request.session["order_id"] = order.id
     request.session.modified = True
 
-    # بدال order_success، الأفضل نخليك على تتبع الطلب
     return redirect("order_status", order_id=order.id)
+
+def _get_open_order_for_table(table_no: str):
+    if not table_no:
+        return None
+    return (
+        Order.objects
+        .filter(table_no=table_no)
+        .exclude(status__in=CLOSED_STATUSES)
+        .order_by("-created_at")
+        .first()
+    )
+
+def _db_cart_summary(table_no: str):
+    o = _get_open_order_for_table(table_no)
+    if not o:
+        return 0, 0
+    items = o.items.all()
+    count = sum(int(i.qty) for i in items)
+    total = sum(int(i.qty) * int(i.price_syp_snapshot) for i in items)
+    if int(o.total_syp) != int(total):
+        o.total_syp = int(total)
+        o.save()
+    return int(count), int(total)
 
 
 def order_success(request, order_id: int):

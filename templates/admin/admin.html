@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
 
   <style>
-    /* Toast بسيط بدون ما نكسر ستايلك */
     .toast{
       position: fixed;
       top: 18px;
@@ -26,7 +25,6 @@
       font-weight: 800;
     }
 
-    /* تحسين بسيط لسطر العناصر ليحمل 4 أعمدة بدون ما نخرب ستايلك */
     .order-line{
       display:flex;
       align-items:center;
@@ -44,6 +42,8 @@
       justify-content: space-between;
       width: 100%;
     }
+
+    .col-actions{ white-space: nowrap; }
     .col-name{ flex: 1; font-weight: 900; }
     .col-price, .col-qty, .col-total{
       white-space: nowrap;
@@ -67,6 +67,38 @@
       color: var(--accent);
       font-size: 14px;
     }
+      /* ✅ اجعل أزرار +/- ضمن مجموعة منفصلة */
+  .qty-actions{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+
+  /* ✅ زر الحذف بعيد بسطر لوحده */
+  .danger-row{
+    margin-top: 6px;
+    display:flex;
+    justify-content:flex-end; /* يمين لأن RTL */
+  }
+
+  .btn-danger{
+    background:#b00020;
+    color:#fff;
+    border-radius:10px;
+    padding:6px 10px;
+    border:0;
+    cursor:pointer;
+    font-weight:900;
+    opacity:.95;
+  }
+
+  .btn-danger:hover{ opacity:1; }
+
+  /* (اختياري) خلي زر الحذف أصغر شوي */
+  .btn-danger.btn-sm{
+    padding:5px 9px;
+    font-size:12px;
+  }
   </style>
 </head>
 <body>
@@ -142,25 +174,15 @@
             </div>
 
             <div class="orders">
-              <!-- Header سطر للعناوين -->
+              <!-- Header -->
               <div class="order-line" style="opacity:.75;">
                 <div class="order-cols">
                   <span class="col-type">نوع</span>
-<span class="col-name">
-  {{ it.name_snapshot }}
-  {% if it.item_type == 'offer' %}
-    <span class="badge" style="margin-inline-start:8px;">عرض</span>
-  {% else %}
-    <span class="badge" style="margin-inline-start:8px;">منتج</span>
-  {% endif %}
-
-  {% if it.note_snapshot %}
-    <div class="small" style="opacity:.75; margin-top:4px;">{{ it.note_snapshot }}</div>
-  {% endif %}
-</span>
+                  <span class="col-name">الاسم</span>
                   <span class="col-price">سعر</span>
                   <span class="col-qty">كمية</span>
                   <span class="col-total">مجموع</span>
+                  <span class="col-actions">تعديل</span>
                 </div>
               </div>
 
@@ -179,10 +201,36 @@
                     <span class="col-price">{{ it.price_syp_snapshot }} ل.س</span>
                     <span class="col-qty">x{{ it.qty }}</span>
                     <span class="col-total">{{ it.line_total }} ل.س</span>
+
+                    <!-- ✅ أزرار التحكم من الأدمن -->
+<span class="col-actions" style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+  
+  <!-- مجموعة تعديل الكمية فقط -->
+  <span class="qty-actions">
+    <form method="post" action="{% url 'admin_item_dec' it.id %}">
+      {% csrf_token %}
+      <button class="btn btn-accent-outline btn-sm" type="submit">-</button>
+    </form>
+
+    <form method="post" action="{% url 'admin_item_inc' it.id %}">
+      {% csrf_token %}
+      <button class="btn btn-accent btn-sm" type="submit">+</button>
+    </form>
+  </span>
+
+  <!-- ✅ زر الحذف بسطر لحاله وبعيد + تأكيد -->
+  <div class="danger-row">
+    <form method="post" action="{% url 'admin_item_remove' it.id %}"
+          onsubmit="return confirm('متأكد بدك تحذف هذا العنصر؟');">
+      {% csrf_token %}
+      <button class="btn-danger btn-sm" type="submit">حذف</button>
+    </form>
+  </div>
+
+</span>
+
                   </div>
                 </div>
-
-
               {% empty %}
                 <div class="hint">لا يوجد عناصر ضمن هذا الطلب</div>
               {% endfor %}
@@ -194,7 +242,6 @@
                   {% if o.total_syp and o.total_syp > 0 %}
                     {{ o.total_syp }} ل.س
                   {% else %}
-                    {# fallback بسيط: اطبع 0 إذا ما كان محسوب #}
                     0 ل.س
                   {% endif %}
                 </span>
@@ -220,6 +267,7 @@
                 <button class="btn btn-accent-outline btn-sm" type="submit">جاهز</button>
               </form>
 
+              <!-- ✅ زر الإفراغ -->
               <form method="post" action="{% url 'admin_done' o.id %}">
                 {% csrf_token %}
                 <button class="btn btn-accent btn-sm" type="submit">تم التنفيذ / إفراغ</button>
