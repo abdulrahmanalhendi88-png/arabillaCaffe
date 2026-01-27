@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ✅ أضفناه: إنشاء مجلد الداتا إن لم يكن موجودًا (مهم لـ SQLite/Media)
 # ✅ DATA_DIR على Render (Persistent Disk) — قد يكون غير قابل للكتابة وقت الـ Build
 #DATA_DIR = Path(os.getenv("DATA_DIR", "/var/data"))
-DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR / ".data")))
+DATA_DIR = Path(os.getenv("DATA_DIR", "/var/data"))
+
 
 # ✅ أنشئ المجلد فقط إذا كان قابل للكتابة (وما تكسر الـ build)
 try:
