@@ -20,10 +20,20 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ✅ أضفناه: مسار ثابت للبيانات على Render (Persistent Disk) + افتراضي /var/data
-DATA_DIR = Path(os.getenv("DATA_DIR", "/var/data"))
+
 
 # ✅ أضفناه: إنشاء مجلد الداتا إن لم يكن موجودًا (مهم لـ SQLite/Media)
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+# ✅ DATA_DIR على Render (Persistent Disk) — قد يكون غير قابل للكتابة وقت الـ Build
+#DATA_DIR = Path(os.getenv("DATA_DIR", "/var/data"))
+DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR / ".data")))
+
+# ✅ أنشئ المجلد فقط إذا كان قابل للكتابة (وما تكسر الـ build)
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    # إذا /var/data read-only (وقت build) تجاهله
+    pass
+
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -169,10 +179,16 @@ WHITENOISE_AUTOREFRESH = DEBUG
 MEDIA_URL = "/media/"
 
 # ✅ عدّلناه: MEDIA على الديسك الدائم (مو ضمن المشروع)
-MEDIA_ROOT = str(DATA_DIR / "media")
 
 # ✅ أضفناه: إنشاء مجلد media على الديسك الدائم
-Path(MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
+MEDIA_ROOT = str(DATA_DIR / "media")
+
+# ✅ أنشئ مجلد media فقط إذا أمكن (بدون كسر الـ build)
+try:
+    Path(MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
+
 
 
 # ✅ أضفناه: CSRF trusted origins لتسجيل دخول admin عبر https على Render
