@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import path, include
-
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -9,5 +8,5 @@ urlpatterns = [
     path("", include("menu.urls")),
 ]
 
-# ✅ Render: خدم ملفات الميديا حتى مع DEBUG=False
+# ✅ خدم الميديا دائماً (حتى لو DEBUG=False) طالما بدك تخدمها من نفس التطبيق
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
